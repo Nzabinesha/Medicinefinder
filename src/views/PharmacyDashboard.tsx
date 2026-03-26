@@ -938,6 +938,8 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus, onUpdatePrescriptio
   onUpdatePayment: (orderId: string, paymentStatus: string) => void;
   onUpdateInsurance: (orderId: string, insuranceStatus: string, coveragePercent: number | null) => void;
 }) {
+  const paymentMethod = (order.paymentMethod || 'cash') as 'cash' | 'insurance' | string;
+  const hasCoverage = order.coveragePercent !== null && order.coveragePercent !== undefined;
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
@@ -1017,10 +1019,20 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus, onUpdatePrescriptio
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Payment & Insurance</h3>
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <p><span className="font-medium">Payment Method:</span> {order.paymentMethod || 'cash'}</p>
-              {order.paymentPhone && <p><span className="font-medium">Payment Phone:</span> {order.paymentPhone}</p>}
-              {order.insuranceProvider && <p><span className="font-medium">Insurance:</span> {order.insuranceProvider}</p>}
-              {order.coveragePercent && <p><span className="font-medium">Coverage:</span> {order.coveragePercent}%</p>}
+              <p><span className="font-medium">Payment Method:</span> {paymentMethod}</p>
+
+              {paymentMethod === 'cash' && (
+                <p><span className="font-medium">Cash payer name:</span> {order.paymentProof || order.customerName}</p>
+              )}
+
+              {paymentMethod === 'insurance' && (
+                <>
+                  {order.paymentPhone && <p><span className="font-medium">Payment Phone:</span> {order.paymentPhone}</p>}
+                  {order.insuranceProvider && <p><span className="font-medium">Insurance Provider:</span> {order.insuranceProvider}</p>}
+                  {order.insuranceDocuments && <p><span className="font-medium">Membership ID:</span> {order.insuranceDocuments}</p>}
+                  {hasCoverage && <p><span className="font-medium">Coverage:</span> {order.coveragePercent}%</p>}
+                </>
+              )}
               <p><span className="font-medium">Payment Status:</span> {order.paymentStatus || 'pending'}</p>
               <p><span className="font-medium">Insurance Status:</span> {order.insuranceStatus || 'not_required'}</p>
             </div>

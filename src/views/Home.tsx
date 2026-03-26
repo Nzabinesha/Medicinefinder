@@ -1,36 +1,40 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { API_BASE } from '@/services/apiBase';
+
 
 export function Home() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const [messages, setMessages] = useState([{ role: "ai", content: "Ask me about medicine usage..." }]);
+  const [question, setQuestion] = useState("");
 
   useEffect(() => {
     if (user && user.role === 'user') {
       navigate('/pharmacies', { replace: true });
     }
   }, [user, navigate]);
-
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('Ask me about medicine usage, side effects, or precautions.');
-
-  const askAssistant = () => {
-    const q = question.toLowerCase();
-    if (!q.trim()) return;
-    if (q.includes('paracetamol')) {
-      setAnswer('Paracetamol helps with pain/fever. Usual adult dose is 500mg-1g every 4-6 hours. Do not exceed 4g/day. Avoid combining with other products containing paracetamol.');
-    } else if (q.includes('ibuprofen')) {
-      setAnswer('Ibuprofen is used for pain/inflammation. Take with food to reduce stomach irritation. Avoid if you have ulcers, severe kidney disease, or NSAID allergy.');
-    } else if (q.includes('side effect')) {
-      setAnswer('Common side effects vary by medicine: nausea, dizziness, headache, stomach upset. Seek urgent care for breathing difficulty, severe rash, or swelling.');
-    } else if (q.includes('pregnan')) {
-      setAnswer('During pregnancy, always confirm medicine safety with a clinician/pharmacist before use. Avoid self-medication.');
-    } else {
-      setAnswer('For safety, this assistant gives general information only. Please confirm exact dose and interactions with a licensed pharmacist or doctor.');
+  const askAssistant = async () => {
+    const q = question.trim();
+    if (!q) return;
+  
+    const updatedMessages = [...messages, { role: "user", content: q }];
+    setMessages(updatedMessages);
+    setQuestion("");
+  
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: updatedMessages }),
+      });
+      const data = await res.json();
+      setMessages([...updatedMessages, { role: "ai", content: data.content }]);
+    } catch (err) {
+      setMessages([...updatedMessages, { role: "ai", content: "AI is unavailable." }]);
     }
   };
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -237,9 +241,13 @@ export function Home() {
               />
               <button className="btn-primary" onClick={askAssistant}>Ask</button>
             </div>
-            <div className="mt-4 p-4 bg-primary-50 rounded-lg text-gray-800 text-sm">
-              {answer}
-            </div>
+            <div className="mt-4 space-y-3 max-h-80 overflow-y-auto">
+  {messages.map((msg, idx) => (
+    <div key={idx} className={`p-3 rounded-lg max-w-[80%] ${msg.role === "user" ? "bg-primary-600 text-white ml-auto" : "bg-gray-200 text-gray-800"}`}>
+      {msg.content}
+    </div>
+  ))}
+</div>
           </div>
         </div>
       </div>

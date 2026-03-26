@@ -8,6 +8,7 @@ import { ordersRouter } from './routes/orders.js';
 import { adminRouter } from './routes/admin.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { assertSupabaseEnv } from './lib/supabase.js';
+import { chatRouter } from './routes/chat.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -85,7 +86,7 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationsRouter);
-
+app.use("/api/chat", chatRouter);
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });

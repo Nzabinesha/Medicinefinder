@@ -9,6 +9,8 @@ export function AdminDashboard() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [delivery, setDelivery] = useState(false);
+  const [lat, setLat] = useState('');
+  const [lng, setLng] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,12 +43,19 @@ export function AdminDashboard() {
     }
     setLoading(true);
     try {
+      const parsedLat = lat.trim() === '' ? undefined : Number(lat);
+      const parsedLng = lng.trim() === '' ? undefined : Number(lng);
+      if (parsedLat !== undefined && Number.isNaN(parsedLat)) throw new Error('Latitude must be a number');
+      if (parsedLng !== undefined && Number.isNaN(parsedLng)) throw new Error('Longitude must be a number');
+
       const res = await adminCreatePharmacy(token, {
         name,
         sector,
         phone: phone || undefined,
         address: address || undefined,
         delivery,
+        lat: parsedLat,
+        lng: parsedLng,
         loginEmail,
         loginPassword,
       });
@@ -56,6 +65,8 @@ export function AdminDashboard() {
       setSector('');
       setPhone('');
       setAddress('');
+      setLat('');
+      setLng('');
       setLoginEmail('');
       setLoginPassword('');
       setDelivery(false);
@@ -137,6 +148,29 @@ export function AdminDashboard() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Address (optional)</label>
                 <input className="input-field" value={address} onChange={(e) => setAddress(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Latitude (optional)</label>
+                <input
+                  className="input-field"
+                  inputMode="decimal"
+                  placeholder="-1.9447"
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Longitude (optional)</label>
+                <input
+                  className="input-field"
+                  inputMode="decimal"
+                  placeholder="30.0614"
+                  value={lng}
+                  onChange={(e) => setLng(e.target.value)}
+                />
               </div>
             </div>
 
