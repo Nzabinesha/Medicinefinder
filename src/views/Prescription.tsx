@@ -20,6 +20,8 @@ export function Prescription() {
   const [insuranceProvider, setInsuranceProvider] = useState('');
   const [insuranceCoveragePercent, setInsuranceCoveragePercent] = useState<number | null>(null);
   const [insuranceOptions, setInsuranceOptions] = useState<string[]>([]);
+  const [payerName, setPayerName] = useState('');
+  const [membershipId, setMembershipId] = useState('');
   const [insuranceDocuments, setInsuranceDocuments] = useState<string | null>(null);
 
   useEffect(() => {
@@ -95,7 +97,20 @@ export function Prescription() {
   }
 
   async function handlePlaceOrder(e: React.FormEvent) {
-    e.preventDefault();
+    e.preventDefault();// PAYMENT VALIDATION
+    if (paymentMethod === 'cash') {
+      if (!paymentPhone || !payerName) {
+        alert('Please fill all cash payment fields');
+        return;
+      }
+    }
+    
+    if (paymentMethod === 'insurance') {
+      if (!insuranceProvider || !insuranceCoveragePercent || !membershipId) {
+        alert('Please complete insurance details');
+        return;
+      }
+    }
     
     const requiresPrescription = items.some(item => item.requiresPrescription);
     if (requiresPrescription && !filePreview && !fileName) {
@@ -125,9 +140,9 @@ export function Prescription() {
         prescriptionFile: filePreview || null,
         paymentMethod,
         paymentPhone: paymentPhone || null,
-        paymentProof: paymentProof || null,
+        paymentProof: paymentMethod === 'cash' ? payerName : null,
+        insuranceDocuments: paymentMethod === 'insurance' ? membershipId : null,
         insuranceProvider: paymentMethod === 'insurance' ? insuranceProvider : null,
-        insuranceDocuments: paymentMethod === 'insurance' ? insuranceDocuments : null,
         insuranceCoveragePercent: paymentMethod === 'insurance' ? insuranceCoveragePercent : null,
       });
       clear();
@@ -184,70 +199,121 @@ export function Prescription() {
             <div className="card">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span>💳</span> Payment Method
-              </h2>
-              <div className="space-y-4 mb-6">
-                <label className="flex items-center gap-3">
-                  <input type="radio" name="payment-method" checked={paymentMethod === 'cash'} onChange={() => setPaymentMethod('cash')} />
-                  <span>Cash</span>
-                </label>
-                <label className="flex items-center gap-3">
-                  <input type="radio" name="payment-method" checked={paymentMethod === 'insurance'} onChange={() => setPaymentMethod('insurance')} />
-                  <span>Insurance</span>
-                </label>
+              </h2><div className="space-y-4 mb-6">
 
-                <input
-                  type="tel"
-                  className="input-field"
-                  placeholder="Phone number used for payment"
-                  value={paymentPhone}
-                  onChange={(e) => setPaymentPhone(e.target.value)}
-                  required
-                />
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  className="input-field"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-                    const r = new FileReader();
-                    r.onloadend = () => setPaymentProof(typeof r.result === 'string' ? r.result : null);
-                    r.readAsDataURL(f);
-                  }}
-                />
+{/* SELECT METHOD */}
+<label className="flex items-center gap-3">
+  <input
+    type="radio"
+    name="payment-method"
+    checked={paymentMethod === 'cash'}
+    onChange={() => setPaymentMethod('cash')}
+  />
+  <span>Cash</span>
+</label>
 
-                {paymentMethod === 'insurance' && (
-                  <div className="space-y-3">
-                    <select className="input-field" value={insuranceProvider} onChange={(e) => setInsuranceProvider(e.target.value)} required>
-                      <option value="">Select insurance provider</option>
-                      {insuranceOptions.map((name) => (
-                        <option key={name} value={name}>{name}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      className="input-field"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (!f) return;
-                        const r = new FileReader();
-                        r.onloadend = () => setInsuranceDocuments(typeof r.result === 'string' ? r.result : null);
-                        r.readAsDataURL(f);
-                      }}
-                    />
-                    <select className="input-field" value={insuranceCoveragePercent ?? ''} onChange={(e) => setInsuranceCoveragePercent(e.target.value ? Number(e.target.value) : null)}>
-                      <option value="">Select coverage</option>
-                      <option value="100">100%</option>
-                      <option value="75">75%</option>
-                      <option value="50">50%</option>
-                      <option value="25">25%</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-            </div>
+<label className="flex items-center gap-3">
+  <input
+    type="radio"
+    name="payment-method"
+    checked={paymentMethod === 'insurance'}
+    onChange={() => setPaymentMethod('insurance')}
+  />
+  <span>Insurance</span>
+</label>
 
+{/* ===================== CASH ===================== */}
+{paymentMethod === 'cash' && (
+  <div className="space-y-3 border p-4 rounded-lg bg-gray-50">
+    <h3 className="font-semibold text-gray-800">Cash Payment Details</h3>
+
+    <input
+      type="tel"
+      className="input-field"
+      placeholder="Phone number used for payment"
+      value={paymentPhone}
+      onChange={(e) => setPaymentPhone(e.target.value)}
+      required
+    />
+
+    {/* ✅ NEW FIELD */}
+    <input
+      type="text"
+      className="input-field"
+      placeholder="Name of person paying"
+      value={paymentProof || ''}
+      onChange={(e) => setPaymentProof(e.target.value)}
+      required
+    />
+  </div>
+)}
+
+{/* ===================== INSURANCE ===================== */}
+{paymentMethod === 'insurance' && (
+  <div className="space-y-3 border p-4 rounded-lg bg-blue-50">
+
+    <h3 className="font-semibold text-gray-800">Insurance Payment</h3>
+
+    {/* Provider */}
+    <select
+      className="input-field"
+      value={insuranceProvider}
+      onChange={(e) => setInsuranceProvider(e.target.value)}
+      required
+    >
+      <option value="">Select insurance provider</option>
+      {insuranceOptions.map((name) => (
+        <option key={name} value={name}>{name}</option>
+      ))}
+    </select>
+
+    {/* Coverage */}
+    <select
+      className="input-field"
+      value={insuranceCoveragePercent ?? ''}
+      onChange={(e) =>
+        setInsuranceCoveragePercent(
+          e.target.value ? Number(e.target.value) : null
+        )
+      }
+    >
+      <option value="">Select coverage</option>
+      <option value="100">100%</option>
+      <option value="80">80%</option>
+      <option value="75">75%</option>
+      <option value="50">50%</option>
+      <option value="25">25%</option>
+    </select>
+
+    {/* ✅ NEW FIELD: Membership ID */}
+    <input
+  type="text"
+  className="input-field"
+  placeholder="Enter Membership ID"
+  value={membershipId}
+  onChange={(e) => setMembershipId(e.target.value)}
+  required
+/>
+
+    {/* ✅ SHOW REMAINING PAYMENT */}
+    {insuranceCoveragePercent && (
+      <div className="p-3 bg-white rounded border">
+        <p className="text-sm text-gray-600">
+          Total: {total().toLocaleString()} RWF
+        </p>
+        <p className="text-sm text-gray-600">
+          Covered: {(total() * insuranceCoveragePercent / 100).toLocaleString()} RWF
+        </p>
+        <p className="font-bold text-red-600">
+          You Pay: {(total() - (total() * insuranceCoveragePercent / 100)).toLocaleString()} RWF
+        </p>
+      </div>
+    )}
+  </div>
+)}
+</div>
+</div>
+              
             <div className="card">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span>📄</span> Prescription Upload
@@ -462,6 +528,7 @@ export function Prescription() {
                 className={`w-full btn-primary ${placing || (requiresPrescription && !filePreview && !fileName) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {placing ? 'Placing Order...' : 'Place Order'}
+                
               </button>
               <Link to="/cart" className="block w-full btn-secondary text-center">
                 Back to Cart

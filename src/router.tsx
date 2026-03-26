@@ -36,7 +36,18 @@ function ProtectedPharmacyRoute() {
   return <PharmacyDashboard />;
 }
 
-// Protected route component for user authentication (ordering)
+// Protected route for ANY logged-in user (user + pharmacy)
+function ProtectedAnyUserRoute({ children }: { children: React.ReactElement }) {
+  const user = useAuthStore(state => state.user);
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+// Protected route ONLY for normal users
 function ProtectedUserRoute({ children }: { children: React.ReactElement }) {
   const user = useAuthStore(state => state.user);
   const isAuthenticated = user !== null;
@@ -129,9 +140,9 @@ export const router = createBrowserRouter([
       { 
         path: 'notifications', 
         element: (
-          <ProtectedUserRoute>
+          <ProtectedAnyUserRoute>
             <Notifications />
-          </ProtectedUserRoute>
+          </ProtectedAnyUserRoute>
         )
       },
       { path: 'login', element: <Login /> },
