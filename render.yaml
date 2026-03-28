@@ -1,0 +1,43 @@
+# Render Blueprint — optional. In the dashboard: New → Blueprint → connect this repo.
+#
+# Before the first static deploy works end-to-end:
+# 1) Deploy the API (or set VITE_API_URL after you know the API URL).
+# 2) On the static site, set VITE_API_URL to your API’s public origin + /api
+#    Example: https://medifinder-api.onrender.com/api
+#    Never use http://localhost — that is baked in at build time and breaks in users’ browsers.
+#
+# If you already created services manually: add a Rewrite on the static site:
+#   Source /*  →  Destination /index.html  →  Action Rewrite
+# (See https://render.com/docs/deploy-create-react-app#using-client-side-routing )
+
+services:
+  - type: web
+    name: medifinder-api
+    rootDir: backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+  - type: web
+    name: medifinder-web
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
