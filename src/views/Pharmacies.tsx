@@ -140,7 +140,7 @@ export function Pharmacies() {
               <div className="p-4 border-b bg-primary-50">
                 <h3 className="font-semibold text-gray-900">📍 Pharmacy Locations</h3>
               </div>
-              <MapView markers={items.map(p => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng }))} height={400} />
+              <MapView markers={items.map(p => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng }))} />
             </div>
           </div>
         )}

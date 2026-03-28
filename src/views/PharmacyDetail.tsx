@@ -197,9 +197,8 @@ export function PharmacyDetail() {
               <div className="p-4 border-b bg-primary-50">
                 <h3 className="font-semibold text-gray-900">📍 Location</h3>
               </div>
-              <MapView 
-                markers={[{ id: pharmacy.id, name: pharmacy.name, lat: pharmacy.lat, lng: pharmacy.lng }]} 
-                height={300} 
+              <MapView
+                markers={[{ id: pharmacy.id, name: pharmacy.name, lat: pharmacy.lat, lng: pharmacy.lng }]}
               />
             </div>
 

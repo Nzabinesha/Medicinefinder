@@ -11,10 +11,11 @@ interface Marker {
 
 interface MapViewProps {
   markers: Marker[];
+  /** Fixed height in px; omit for responsive default (better on phones). */
   height?: number;
 }
 
-export function MapView({ markers, height = 400 }: MapViewProps) {
+export function MapView({ markers, height }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
@@ -64,7 +65,16 @@ export function MapView({ markers, height = 400 }: MapViewProps) {
       mapRef.current.setView([markers[0].lat, markers[0].lng], 13);
     }
 
+    const map = mapRef.current;
+    const el = mapContainerRef.current;
+    let ro: ResizeObserver | undefined;
+    if (map && el && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => map.invalidateSize());
+      ro.observe(el);
+    }
+
     return () => {
+      ro?.disconnect();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -75,8 +85,12 @@ export function MapView({ markers, height = 400 }: MapViewProps) {
   return (
     <div
       ref={mapContainerRef}
-      style={{ height: `${height}px`, width: '100%' }}
-      className="rounded-lg"
+      style={height != null ? { height: `${height}px`, width: '100%' } : undefined}
+      className={
+        height != null
+          ? 'rounded-lg w-full'
+          : 'rounded-lg w-full min-h-[220px] h-[min(52dvh,360px)] sm:h-[min(45vh,400px)] md:h-[400px]'
+      }
     />
   );
 }

@@ -53,10 +53,10 @@ export function Home() {
 
         <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Medifinder
             </h1>
-            <p className="mt-4 text-xl md:text-2xl text-primary-100 leading-relaxed">
+            <p className="mt-4 text-base sm:text-lg md:text-2xl text-primary-100 leading-relaxed">
             helps residents of Kigali quickly discover nearby pharmacies, check medicine availability, and confirm insurance acceptance before visiting — all in one simple platform. Sign up or log in to start finding care smarter and faster.
             </p>
           </div>
@@ -232,14 +232,16 @@ export function Home() {
           <div className="card">
             <h2 className="text-2xl font-bold text-gray-900 mb-3">AI Medicine Assistant</h2>
             <p className="text-sm text-gray-600 mb-4">General educational guidance only. Not a diagnosis.</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
               <input
-                className="input-field"
+                className="input-field min-w-0 flex-1"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="e.g. What are ibuprofen side effects?"
               />
-              <button className="btn-primary" onClick={askAssistant}>Ask</button>
+              <button type="button" className="btn-primary shrink-0 w-full sm:w-auto" onClick={askAssistant}>
+                Ask
+              </button>
             </div>
             <div className="mt-4 space-y-3 max-h-80 overflow-y-auto">
   {messages.map((msg, idx) => (
